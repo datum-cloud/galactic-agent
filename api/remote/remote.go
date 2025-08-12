@@ -15,7 +15,7 @@ type Remote struct {
 	QoS            byte
 	TopicRX        string
 	TopicTX        string
-	ReceiveHandler func(interface{})
+	ReceiveHandler func([]byte) error
 
 	client mqtt.Client
 }
@@ -37,7 +37,10 @@ func (r *Remote) Run(ctx context.Context) error {
 		r.TopicRX,
 		r.QoS,
 		func(_ mqtt.Client, msg mqtt.Message) {
-			r.ReceiveHandler(msg.Payload())
+			payload := msg.Payload()
+			if err := r.ReceiveHandler(payload); err != nil {
+				log.Printf("MQTT ReceiveHandler failed for: %v", payload)
+			}
 		},
 	)
 	if !token.WaitTimeout(5*time.Second) || token.Error() != nil {
