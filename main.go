@@ -10,6 +10,8 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
@@ -69,16 +71,35 @@ func Serve(socketPath string) error {
 	return nil
 }
 
+var configFile string
+
+func initConfig() {
+	if configFile != "" {
+		viper.SetConfigFile(configFile)
+	}
+	viper.AutomaticEnv()
+	viper.SetDefault("socket_path", "/var/run/galactic/agent.sock")
+	if err := viper.ReadInConfig(); err == nil {
+		log.Printf("Using config file: %s\n", viper.ConfigFileUsed())
+	} else {
+		log.Printf("No config file found - using defaults.")
+	}
+}
+
 func main() {
 	cmd := &cobra.Command{
 		Use:   "galactic-agent",
 		Short: "Galactic Agent",
+		PersistentPreRun: func(cmd *cobra.Command, args []string) {
+			initConfig()
+		},
 		Run: func(cmd *cobra.Command, args []string) {
-			if err := Serve(DEFAULT_SOCKET_PATH); err != nil {
+			if err := Serve(viper.GetString("socket_path")); err != nil {
 				log.Fatalf("Serve failed: %v", err)
 			}
 		},
 	}
+	cmd.PersistentFlags().StringVar(&configFile, "config", "", "config file")
 	cmd.SetArgs(os.Args[1:])
 	if err := cmd.Execute(); err != nil {
 		log.Fatalf("Execution failed: %v", err)
