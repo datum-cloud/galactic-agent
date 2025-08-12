@@ -2,89 +2,44 @@ package main
 
 import (
 	"context"
+	"fmt"
+	"golang.org/x/sync/errgroup"
 	"log"
-	"net"
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
-
 	"github.com/datum-cloud/galactic-agent/api/local"
+	"github.com/datum-cloud/galactic-agent/api/remote"
 )
-
-const DEFAULT_SOCKET_PATH = "/var/run/galactic/agent.sock"
-
-type LocalServer struct {
-	local.UnimplementedLocalServer
-}
-
-func (s *LocalServer) Register(ctx context.Context, req *local.RegisterRequest) (*local.RegisterReply, error) {
-	log.Printf("REGISTER:   vpc='%v', vpcattachment='%v', networks='%v'\n", req.GetVpc(), req.GetVpcattachment(), req.GetNetworks())
-	return &local.RegisterReply{Confirmed: true}, nil
-}
-
-func (s *LocalServer) Deregister(ctx context.Context, req *local.DeregisterRequest) (*local.DeregisterReply, error) {
-	log.Printf("DEREGISTER: vpc='%v', vpcattachment='%v', networks='%v'\n", req.GetVpc(), req.GetVpcattachment(), req.GetNetworks())
-	return &local.DeregisterReply{Confirmed: true}, nil
-}
-
-func Serve(socketPath string) error {
-	listener, err := net.Listen("unix", socketPath)
-	if err != nil {
-		return err
-	}
-	defer listener.Close() //nolint:errcheck
-
-	s := grpc.NewServer()
-	local.RegisterLocalServer(s, &LocalServer{})
-
-	reflection.Register(s)
-
-	stop := make(chan os.Signal, 1)
-	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM)
-
-	go func() {
-		log.Printf("gRPC listening on unix://%s", socketPath)
-		if err := s.Serve(listener); err != nil {
-			log.Printf("serve exited: %v", err)
-		}
-	}()
-
-	<-stop
-	log.Println("shutting down...")
-	done := make(chan struct{})
-	go func() {
-		s.GracefulStop()
-		close(done)
-	}()
-	select {
-	case <-done:
-	case <-time.After(5 * time.Second):
-		s.Stop()
-	}
-	return nil
-}
 
 var configFile string
 
 func initConfig() {
+	viper.SetDefault("socket_path", "/var/run/galactic/agent.sock")
+	viper.SetDefault("mqtt_host", "mqtt")
+	viper.SetDefault("mqtt_port", 1883)
+	viper.SetDefault("mqtt_qos", 0)
+	viper.SetDefault("mqtt_topic_receive", "galactic/default/receive")
+	viper.SetDefault("mqtt_topic_send", "galactic/default/send")
 	if configFile != "" {
 		viper.SetConfigFile(configFile)
 	}
 	viper.AutomaticEnv()
-	viper.SetDefault("socket_path", "/var/run/galactic/agent.sock")
 	if err := viper.ReadInConfig(); err == nil {
 		log.Printf("Using config file: %s\n", viper.ConfigFileUsed())
 	} else {
 		log.Printf("No config file found - using defaults.")
 	}
 }
+
+var (
+	l local.Local
+	r remote.Remote
+)
 
 func main() {
 	cmd := &cobra.Command{
@@ -94,9 +49,45 @@ func main() {
 			initConfig()
 		},
 		Run: func(cmd *cobra.Command, args []string) {
-			if err := Serve(viper.GetString("socket_path")); err != nil {
-				log.Fatalf("Serve failed: %v", err)
+			ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+			defer stop() //nolint:errcheck
+
+			l = local.Local{
+				SocketPath: viper.GetString("socket_path"),
+				RegisterHandler: func(vpc, vpcAttachment string, networks []string) error {
+					log.Printf("REGISTER:   vpc='%v', vpcattachment='%v', networks='%v'\n", vpc, vpcAttachment, networks)
+					r.Send(fmt.Sprintf("REGISTER:   vpc='%v', vpcattachment='%v', networks='%v'", vpc, vpcAttachment, networks))
+					return nil
+				},
+				DeregisterHandler: func(vpc, vpcAttachment string, networks []string) error {
+					log.Printf("DEREGISTER: vpc='%v', vpcattachment='%v', networks='%v'\n", vpc, vpcAttachment, networks)
+					r.Send(fmt.Sprintf("DEREGISTER: vpc='%v', vpcattachment='%v', networks='%v'", vpc, vpcAttachment, networks))
+					return nil
+				},
 			}
+
+			r = remote.Remote{
+				Host:    viper.GetString("mqtt_host"),
+				Port:    viper.GetInt("mqtt_port"),
+				QoS:     byte(viper.GetInt("mqtt_qos")),
+				TopicRX: viper.GetString("mqtt_topic_receive"),
+				TopicTX: viper.GetString("mqtt_topic_send"),
+				ReceiveHandler: func(payload interface{}) {
+					log.Printf("MQTT received: %s", payload)
+				},
+			}
+
+			g, ctx := errgroup.WithContext(ctx)
+			g.Go(func() error {
+				return l.Serve(ctx)
+			})
+			g.Go(func() error {
+				return r.Run(ctx)
+			})
+			if err := g.Wait(); err != nil {
+				log.Printf("Error: %v", err)
+			}
+			log.Printf("Shutdown")
 		},
 	}
 	cmd.PersistentFlags().StringVar(&configFile, "config", "", "config file")
