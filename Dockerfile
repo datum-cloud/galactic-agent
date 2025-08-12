@@ -3,10 +3,11 @@ WORKDIR /workspace
 COPY go.mod go.mod
 COPY go.sum go.sum
 RUN go mod download
+COPY api api
 COPY main.go main.go
 RUN CGO_ENABLED=0 go build -a -o galactic-agent main.go
 
-FROM gcr.io/distroless/static:nonroot
+FROM gcr.io/distroless/static
 WORKDIR /
 COPY --from=builder /workspace/galactic-agent  .
 ENTRYPOINT ["/galactic-agent"]
