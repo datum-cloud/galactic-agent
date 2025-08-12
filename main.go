@@ -15,6 +15,8 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
+	"google.golang.org/protobuf/proto"
+
 	"github.com/datum-cloud/galactic-agent/api/local"
 	"github.com/datum-cloud/galactic-agent/api/remote"
 )
@@ -69,8 +71,18 @@ func main() {
 						return err
 					}
 					for _, n := range networks {
-						payload := fmt.Sprintf("REGISTER: network='%s', srv6_endpoint='%s'", n, srv6_endpoint)
-						log.Println(payload)
+						log.Printf("REGISTER: network='%s', srv6_endpoint='%s'", n, srv6_endpoint)
+						payload, err := proto.Marshal(&remote.Envelope{
+							Kind: &remote.Envelope_Register{
+								Register: &remote.Register{
+									Network:      n,
+									Srv6Endpoint: srv6_endpoint,
+								},
+							},
+						})
+						if err != nil {
+							return err
+						}
 						r.Send(payload)
 					}
 					return nil
@@ -81,8 +93,18 @@ func main() {
 						return err
 					}
 					for _, n := range networks {
-						payload := fmt.Sprintf("DEREGISTER: network='%s', srv6_endpoint='%s'", n, srv6_endpoint)
-						log.Println(payload)
+						log.Printf("DEREGISTER: network='%s', srv6_endpoint='%s'", n, srv6_endpoint)
+						payload, err := proto.Marshal(&remote.Envelope{
+							Kind: &remote.Envelope_Deregister{
+								Deregister: &remote.Deregister{
+									Network:      n,
+									Srv6Endpoint: srv6_endpoint,
+								},
+							},
+						})
+						if err != nil {
+							return err
+						}
 						r.Send(payload)
 					}
 					return nil
@@ -95,8 +117,16 @@ func main() {
 				QoS:     byte(viper.GetInt("mqtt_qos")),
 				TopicRX: viper.GetString("mqtt_topic_receive"),
 				TopicTX: viper.GetString("mqtt_topic_send"),
-				ReceiveHandler: func(payload interface{}) {
-					log.Printf("MQTT received: %s", payload)
+				ReceiveHandler: func(payload []byte) error {
+					envelope := &remote.Envelope{}
+					if err := proto.Unmarshal(payload, envelope); err != nil {
+						return err
+					}
+					switch kind := envelope.Kind.(type) {
+					case *remote.Envelope_Route:
+						log.Printf("ROUTE: network='%s', srv6_endpoint='%s', srv6_segments='%s'", kind.Route.Network, kind.Route.Srv6Endpoint, kind.Route.Srv6Segments)
+					}
+					return nil
 				},
 			}
 
