@@ -132,7 +132,7 @@ func main() {
 					}
 					switch kind := envelope.Kind.(type) {
 					case *remote.Envelope_Route:
-						log.Printf("ROUTE: network='%s', srv6_endpoint='%s', srv6_segments='%s'", kind.Route.Network, kind.Route.Srv6Endpoint, kind.Route.Srv6Segments)
+						log.Printf("ROUTE: status='%s', network='%s', srv6_endpoint='%s', srv6_segments='%s'", kind.Route.Status, kind.Route.Network, kind.Route.Srv6Endpoint, kind.Route.Srv6Segments)
 						switch kind.Route.Status {
 						case remote.Route_ADD:
 							if err := srv6.RouteEgressAdd(kind.Route.Network, fmt.Sprintf("%s/128", kind.Route.Srv6Endpoint), strings.Join(kind.Route.Srv6Segments, ",")); err != nil {
