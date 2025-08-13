@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/signal"
 	"strconv"
+	"strings"
 	"syscall"
 
 	"github.com/spf13/cobra"
@@ -19,6 +20,7 @@ import (
 
 	"github.com/datum-cloud/galactic-agent/api/local"
 	"github.com/datum-cloud/galactic-agent/api/remote"
+	"github.com/datum-cloud/galactic-agent/srv6"
 )
 
 var configFile string
@@ -70,6 +72,7 @@ func main() {
 					if err != nil {
 						return err
 					}
+					srv6.RouteIngressAdd(fmt.Sprintf("%s/128", srv6_endpoint))
 					for _, n := range networks {
 						log.Printf("REGISTER: network='%s', srv6_endpoint='%s'", n, srv6_endpoint)
 						payload, err := proto.Marshal(&remote.Envelope{
@@ -92,6 +95,7 @@ func main() {
 					if err != nil {
 						return err
 					}
+					srv6.RouteIngressDel(fmt.Sprintf("%s/128", srv6_endpoint))
 					for _, n := range networks {
 						log.Printf("DEREGISTER: network='%s', srv6_endpoint='%s'", n, srv6_endpoint)
 						payload, err := proto.Marshal(&remote.Envelope{
@@ -125,6 +129,12 @@ func main() {
 					switch kind := envelope.Kind.(type) {
 					case *remote.Envelope_Route:
 						log.Printf("ROUTE: network='%s', srv6_endpoint='%s', srv6_segments='%s'", kind.Route.Network, kind.Route.Srv6Endpoint, kind.Route.Srv6Segments)
+						switch kind.Route.Status {
+						case remote.Route_ADD:
+							srv6.RouteEgressAdd(kind.Route.Network, fmt.Sprintf("%s/128", kind.Route.Srv6Endpoint), strings.Join(kind.Route.Srv6Segments, ","))
+						case remote.Route_DELETE:
+							srv6.RouteEgressDel(kind.Route.Network, fmt.Sprintf("%s/128", kind.Route.Srv6Endpoint), strings.Join(kind.Route.Srv6Segments, ","))
+						}
 					}
 					return nil
 				},
