@@ -25,7 +25,7 @@ func (r *Remote) Run(ctx context.Context) error {
 	log.Printf("MQTT connecting")
 
 	opts := mqtt.NewClientOptions().
-			    AddBroker(r.URL)
+		AddBroker(r.URL)
 	if r.ClientID != "" {
 		opts.SetClientID(r.ClientID)
 	}
