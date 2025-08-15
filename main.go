@@ -26,8 +26,7 @@ var configFile string
 func initConfig() {
 	viper.SetDefault("srv6_net", "fc00::/56")
 	viper.SetDefault("socket_path", "/var/run/galactic/agent.sock")
-	viper.SetDefault("mqtt_host", "mqtt")
-	viper.SetDefault("mqtt_port", 1883)
+	viper.SetDefault("mqtt_url", "tcp://mqtt:1883")
 	viper.SetDefault("mqtt_qos", 0)
 	viper.SetDefault("mqtt_topic_receive", "galactic/default/receive")
 	viper.SetDefault("mqtt_topic_send", "galactic/default/send")
@@ -112,11 +111,13 @@ func main() {
 			}
 
 			r = remote.Remote{
-				Host:    viper.GetString("mqtt_host"),
-				Port:    viper.GetInt("mqtt_port"),
-				QoS:     byte(viper.GetInt("mqtt_qos")),
-				TopicRX: viper.GetString("mqtt_topic_receive"),
-				TopicTX: viper.GetString("mqtt_topic_send"),
+				URL:      viper.GetString("mqtt_url"),
+				ClientID: viper.GetString("mqtt_clientid"),
+				Username: viper.GetString("mqtt_username"),
+				Password: viper.GetString("mqtt_password"),
+				QoS:      byte(viper.GetInt("mqtt_qos")),
+				TopicRX:  viper.GetString("mqtt_topic_receive"),
+				TopicTX:  viper.GetString("mqtt_topic_send"),
 				ReceiveHandler: func(payload []byte) error {
 					envelope := &remote.Envelope{}
 					if err := proto.Unmarshal(payload, envelope); err != nil {

@@ -2,7 +2,6 @@ package remote
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
@@ -10,8 +9,10 @@ import (
 )
 
 type Remote struct {
-	Host           string
-	Port           int
+	URL            string
+	ClientID       string
+	Username       string
+	Password       string
 	QoS            byte
 	TopicRX        string
 	TopicTX        string
@@ -21,13 +22,21 @@ type Remote struct {
 }
 
 func (r *Remote) Run(ctx context.Context) error {
-	mqtt_url := fmt.Sprintf("tcp://%s:%d", r.Host, r.Port)
-	log.Printf("MQTT connecting: %s", mqtt_url)
+	log.Printf("MQTT connecting")
 
-	r.client = mqtt.NewClient(
-		mqtt.NewClientOptions().
-			AddBroker(mqtt_url),
-	)
+	opts := mqtt.NewClientOptions().
+			    AddBroker(r.URL)
+	if r.ClientID != "" {
+		opts.SetClientID(r.ClientID)
+	}
+	if r.Username != "" {
+		opts.SetUsername(r.Username)
+	}
+	if r.Password != "" {
+		opts.SetPassword(r.Password)
+	}
+
+	r.client = mqtt.NewClient(opts)
 	if tok := r.client.Connect(); tok.Wait() && tok.Error() != nil {
 		return tok.Error()
 	}
