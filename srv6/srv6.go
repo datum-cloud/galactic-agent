@@ -1,6 +1,7 @@
 package srv6
 
 import (
+	"fmt"
 	"log"
 	"net"
 	"strings"
@@ -14,15 +15,12 @@ import (
 	"github.com/datum-cloud/galactic/util"
 )
 
-func RouteIngressAdd(ipRaw string) error {
-	ip, err := netlink.ParseIPNet(ipRaw)
+func RouteIngressAdd(ipStr string) error {
+	ip, err := util.ParseIP(ipStr)
 	if err != nil {
 		log.Fatalf("Invalid ip: %v", err)
 	}
-	if !IsHost(ip) {
-		log.Fatalf("ip is not a host route")
-	}
-	vpc, vpcAttachment, err := util.ExtractVPCFromSRv6Endpoint(ip.IP)
+	vpc, vpcAttachment, err := util.ExtractVPCFromSRv6Endpoint(ip)
 	if err != nil {
 		log.Fatalf("could not extract SRv6 endpoint: %v", err)
 	}
@@ -35,21 +33,18 @@ func RouteIngressAdd(ipRaw string) error {
 		log.Fatalf("Invalid vpcattachment: %v", err)
 	}
 
-	if err := routeingress.Add(ip, vpc, vpcAttachment); err != nil {
+	if err := routeingress.Add(netlink.NewIPNet(ip), vpc, vpcAttachment); err != nil {
 		log.Fatalf("routeingress add failed: %v", err)
 	}
 	return nil
 }
 
-func RouteIngressDel(ipRaw string) error {
-	ip, err := netlink.ParseIPNet(ipRaw)
+func RouteIngressDel(ipStr string) error {
+	ip, err := util.ParseIP(ipStr)
 	if err != nil {
 		log.Fatalf("Invalid ip: %v", err)
 	}
-	if !IsHost(ip) {
-		log.Fatalf("ip is not a host route")
-	}
-	vpc, vpcAttachment, err := util.ExtractVPCFromSRv6Endpoint(ip.IP)
+	vpc, vpcAttachment, err := util.ExtractVPCFromSRv6Endpoint(ip)
 	if err != nil {
 		log.Fatalf("could not extract SRv6 endpoint: %v", err)
 	}
@@ -62,30 +57,27 @@ func RouteIngressDel(ipRaw string) error {
 		log.Fatalf("Invalid vpcattachment: %v", err)
 	}
 
-	if err := routeingress.Delete(ip, vpc, vpcAttachment); err != nil {
+	if err := routeingress.Delete(netlink.NewIPNet(ip), vpc, vpcAttachment); err != nil {
 		log.Fatalf("routeingress delete failed: %v", err)
 	}
 	return nil
 }
 
-func RouteEgressAdd(prefixRaw, srcRaw, segmentsRaw string) error {
-	prefix, err := netlink.ParseIPNet(prefixRaw)
+func RouteEgressAdd(prefixStr, srcStr string, segmentsStr []string) error {
+	prefix, err := netlink.ParseIPNet(prefixStr)
 	if err != nil {
 		log.Fatalf("Invalid prefix: %v", err)
 	}
-	src, err := netlink.ParseIPNet(srcRaw)
+	src, err := util.ParseIP(srcStr)
 	if err != nil {
 		log.Fatalf("Invalid src: %v", err)
 	}
-	if !IsHost(src) {
-		log.Fatalf("src is not a host route")
-	}
-	segments, err := util.ParseSegments(segmentsRaw)
+	segments, err := ParseSegments(segmentsStr)
 	if err != nil {
 		log.Fatalf("Invalid segments: %v", err)
 	}
 
-	vpc, vpcAttachment, err := util.ExtractVPCFromSRv6Endpoint(src.IP)
+	vpc, vpcAttachment, err := util.ExtractVPCFromSRv6Endpoint(src)
 	if err != nil {
 		log.Fatalf("could not extract SRv6 endpoint: %v", err)
 	}
@@ -109,24 +101,21 @@ func RouteEgressAdd(prefixRaw, srcRaw, segmentsRaw string) error {
 	return nil
 }
 
-func RouteEgressDel(prefixRaw, srcRaw, segmentsRaw string) error {
-	prefix, err := netlink.ParseIPNet(prefixRaw)
+func RouteEgressDel(prefixStr, srcStr string, segmentsStr []string) error {
+	prefix, err := netlink.ParseIPNet(prefixStr)
 	if err != nil {
 		log.Fatalf("Invalid prefix: %v", err)
 	}
-	src, err := netlink.ParseIPNet(srcRaw)
+	src, err := util.ParseIP(srcStr)
 	if err != nil {
 		log.Fatalf("Invalid src: %v", err)
 	}
-	if !IsHost(src) {
-		log.Fatalf("src is not a host route")
-	}
-	segments, err := util.ParseSegments(segmentsRaw)
+	segments, err := ParseSegments(segmentsStr)
 	if err != nil {
 		log.Fatalf("Invalid segments: %v", err)
 	}
 
-	vpc, vpcAttachment, err := util.ExtractVPCFromSRv6Endpoint(src.IP)
+	vpc, vpcAttachment, err := util.ExtractVPCFromSRv6Endpoint(src)
 	if err != nil {
 		log.Fatalf("could not extract SRv6 endpoint: %v", err)
 	}
@@ -158,4 +147,22 @@ func IsHost(ipNet *net.IPNet) bool {
 	ones, bits := ipNet.Mask.Size()
 	// host if mask is full length: /32 for IPv4, /128 for IPv6
 	return ones == bits
+}
+
+func ParseSegments(input []string) ([]net.IP, error) {
+	var segments []net.IP
+	for _, ipStr := range input {
+		ip, err := util.ParseIP(ipStr)
+		if err != nil {
+			return nil, fmt.Errorf("could not parse ip (%s): %v", ipStr, err)
+		}
+		if ip.To4() != nil {
+			return nil, fmt.Errorf("not an ipv6 address: %s", ipStr)
+		}
+		segments = append([]net.IP{ip}, segments...)
+	}
+	if len(segments) == 0 {
+		return nil, fmt.Errorf("no segments parsed: %v", input)
+	}
+	return segments, nil
 }

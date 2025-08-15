@@ -10,7 +10,6 @@ import (
 	"os"
 	"os/signal"
 	"strconv"
-	"strings"
 	"syscall"
 
 	"github.com/spf13/cobra"
@@ -72,7 +71,7 @@ func main() {
 					if err != nil {
 						return err
 					}
-					if err := srv6.RouteIngressAdd(fmt.Sprintf("%s/128", srv6_endpoint)); err != nil {
+					if err := srv6.RouteIngressAdd(srv6_endpoint); err != nil {
 						return err
 					}
 					for _, n := range networks {
@@ -97,7 +96,7 @@ func main() {
 					if err != nil {
 						return err
 					}
-					if err := srv6.RouteIngressDel(fmt.Sprintf("%s/128", srv6_endpoint)); err != nil {
+					if err := srv6.RouteIngressDel(srv6_endpoint); err != nil {
 						return err
 					}
 					for _, n := range networks {
@@ -135,11 +134,11 @@ func main() {
 						log.Printf("ROUTE: status='%s', network='%s', srv6_endpoint='%s', srv6_segments='%s'", kind.Route.Status, kind.Route.Network, kind.Route.Srv6Endpoint, kind.Route.Srv6Segments)
 						switch kind.Route.Status {
 						case remote.Route_ADD:
-							if err := srv6.RouteEgressAdd(kind.Route.Network, fmt.Sprintf("%s/128", kind.Route.Srv6Endpoint), strings.Join(kind.Route.Srv6Segments, ",")); err != nil {
+							if err := srv6.RouteEgressAdd(kind.Route.Network, kind.Route.Srv6Endpoint, kind.Route.Srv6Segments); err != nil {
 								return err
 							}
 						case remote.Route_DELETE:
-							if err := srv6.RouteEgressDel(kind.Route.Network, fmt.Sprintf("%s/128", kind.Route.Srv6Endpoint), strings.Join(kind.Route.Srv6Segments, ",")); err != nil {
+							if err := srv6.RouteEgressDel(kind.Route.Network, kind.Route.Srv6Endpoint, kind.Route.Srv6Segments); err != nil {
 								return err
 							}
 						}
