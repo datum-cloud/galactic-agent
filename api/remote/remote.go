@@ -36,26 +36,29 @@ func (r *Remote) Run(ctx context.Context) error {
 		opts.SetPassword(r.Password)
 	}
 
+	opts.OnConnect = func(c mqtt.Client) {
+		log.Println("MQTT connected")
+		token := c.Subscribe(
+			r.TopicRX,
+			r.QoS,
+			func(_ mqtt.Client, msg mqtt.Message) {
+				payload := msg.Payload()
+				if err := r.ReceiveHandler(payload); err != nil {
+					log.Printf("MQTT ReceiveHandler failed for: %v", payload)
+				}
+			},
+		)
+		if !token.WaitTimeout(5*time.Second) || token.Error() != nil {
+			log.Printf("MQTT subscribe error: %v", token.Error())
+			return
+		}
+		log.Printf("MQTT subscribed: %s", r.TopicRX)
+	}
+
 	r.client = mqtt.NewClient(opts)
 	if tok := r.client.Connect(); tok.Wait() && tok.Error() != nil {
 		return tok.Error()
 	}
-	log.Println("MQTT connected")
-
-	token := r.client.Subscribe(
-		r.TopicRX,
-		r.QoS,
-		func(_ mqtt.Client, msg mqtt.Message) {
-			payload := msg.Payload()
-			if err := r.ReceiveHandler(payload); err != nil {
-				log.Printf("MQTT ReceiveHandler failed for: %v", payload)
-			}
-		},
-	)
-	if !token.WaitTimeout(5*time.Second) || token.Error() != nil {
-		return token.Error()
-	}
-	log.Printf("MQTT subscribed: %s", r.TopicRX)
 
 	<-ctx.Done()
 	if r.client.IsConnected() {
