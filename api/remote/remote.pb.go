@@ -21,6 +21,52 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type Route_Status int32
+
+const (
+	Route_ADD    Route_Status = 0
+	Route_DELETE Route_Status = 1
+)
+
+// Enum value maps for Route_Status.
+var (
+	Route_Status_name = map[int32]string{
+		0: "ADD",
+		1: "DELETE",
+	}
+	Route_Status_value = map[string]int32{
+		"ADD":    0,
+		"DELETE": 1,
+	}
+)
+
+func (x Route_Status) Enum() *Route_Status {
+	p := new(Route_Status)
+	*p = x
+	return p
+}
+
+func (x Route_Status) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (Route_Status) Descriptor() protoreflect.EnumDescriptor {
+	return file_remote_proto_enumTypes[0].Descriptor()
+}
+
+func (Route_Status) Type() protoreflect.EnumType {
+	return &file_remote_proto_enumTypes[0]
+}
+
+func (x Route_Status) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use Route_Status.Descriptor instead.
+func (Route_Status) EnumDescriptor() ([]byte, []int) {
+	return file_remote_proto_rawDescGZIP(), []int{3, 0}
+}
+
 type Envelope struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Types that are valid to be assigned to Kind:
@@ -228,6 +274,7 @@ type Route struct {
 	Network       string                 `protobuf:"bytes,1,opt,name=network,proto3" json:"network,omitempty"`
 	Srv6Endpoint  string                 `protobuf:"bytes,2,opt,name=srv6_endpoint,json=srv6Endpoint,proto3" json:"srv6_endpoint,omitempty"`
 	Srv6Segments  []string               `protobuf:"bytes,3,rep,name=srv6_segments,json=srv6Segments,proto3" json:"srv6_segments,omitempty"`
+	Status        Route_Status           `protobuf:"varint,4,opt,name=status,proto3,enum=remote.v1.Route_Status" json:"status,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -283,6 +330,13 @@ func (x *Route) GetSrv6Segments() []string {
 	return nil
 }
 
+func (x *Route) GetStatus() Route_Status {
+	if x != nil {
+		return x.Status
+	}
+	return Route_ADD
+}
+
 var File_remote_proto protoreflect.FileDescriptor
 
 const file_remote_proto_rawDesc = "" +
@@ -301,11 +355,16 @@ const file_remote_proto_rawDesc = "" +
 	"\n" +
 	"Deregister\x12\x18\n" +
 	"\anetwork\x18\x01 \x01(\tR\anetwork\x12#\n" +
-	"\rsrv6_endpoint\x18\x02 \x01(\tR\fsrv6Endpoint\"k\n" +
+	"\rsrv6_endpoint\x18\x02 \x01(\tR\fsrv6Endpoint\"\xbb\x01\n" +
 	"\x05Route\x12\x18\n" +
 	"\anetwork\x18\x01 \x01(\tR\anetwork\x12#\n" +
 	"\rsrv6_endpoint\x18\x02 \x01(\tR\fsrv6Endpoint\x12#\n" +
-	"\rsrv6_segments\x18\x03 \x03(\tR\fsrv6SegmentsB9Z7github.com/datum-cloud/galactic-agent/api/remote;remoteb\x06proto3"
+	"\rsrv6_segments\x18\x03 \x03(\tR\fsrv6Segments\x12/\n" +
+	"\x06status\x18\x04 \x01(\x0e2\x17.remote.v1.Route.StatusR\x06status\"\x1d\n" +
+	"\x06Status\x12\a\n" +
+	"\x03ADD\x10\x00\x12\n" +
+	"\n" +
+	"\x06DELETE\x10\x01B9Z7github.com/datum-cloud/galactic-agent/api/remote;remoteb\x06proto3"
 
 var (
 	file_remote_proto_rawDescOnce sync.Once
@@ -319,22 +378,25 @@ func file_remote_proto_rawDescGZIP() []byte {
 	return file_remote_proto_rawDescData
 }
 
+var file_remote_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
 var file_remote_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_remote_proto_goTypes = []any{
-	(*Envelope)(nil),   // 0: remote.v1.Envelope
-	(*Register)(nil),   // 1: remote.v1.Register
-	(*Deregister)(nil), // 2: remote.v1.Deregister
-	(*Route)(nil),      // 3: remote.v1.Route
+	(Route_Status)(0),  // 0: remote.v1.Route.Status
+	(*Envelope)(nil),   // 1: remote.v1.Envelope
+	(*Register)(nil),   // 2: remote.v1.Register
+	(*Deregister)(nil), // 3: remote.v1.Deregister
+	(*Route)(nil),      // 4: remote.v1.Route
 }
 var file_remote_proto_depIdxs = []int32{
-	1, // 0: remote.v1.Envelope.register:type_name -> remote.v1.Register
-	2, // 1: remote.v1.Envelope.deregister:type_name -> remote.v1.Deregister
-	3, // 2: remote.v1.Envelope.route:type_name -> remote.v1.Route
-	3, // [3:3] is the sub-list for method output_type
-	3, // [3:3] is the sub-list for method input_type
-	3, // [3:3] is the sub-list for extension type_name
-	3, // [3:3] is the sub-list for extension extendee
-	0, // [0:3] is the sub-list for field type_name
+	2, // 0: remote.v1.Envelope.register:type_name -> remote.v1.Register
+	3, // 1: remote.v1.Envelope.deregister:type_name -> remote.v1.Deregister
+	4, // 2: remote.v1.Envelope.route:type_name -> remote.v1.Route
+	0, // 3: remote.v1.Route.status:type_name -> remote.v1.Route.Status
+	4, // [4:4] is the sub-list for method output_type
+	4, // [4:4] is the sub-list for method input_type
+	4, // [4:4] is the sub-list for extension type_name
+	4, // [4:4] is the sub-list for extension extendee
+	0, // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_remote_proto_init() }
@@ -352,13 +414,14 @@ func file_remote_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_remote_proto_rawDesc), len(file_remote_proto_rawDesc)),
-			NumEnums:      0,
+			NumEnums:      1,
 			NumMessages:   4,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
 		GoTypes:           file_remote_proto_goTypes,
 		DependencyIndexes: file_remote_proto_depIdxs,
+		EnumInfos:         file_remote_proto_enumTypes,
 		MessageInfos:      file_remote_proto_msgTypes,
 	}.Build()
 	File_remote_proto = out.File
