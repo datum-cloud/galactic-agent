@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"net"
+	"os"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -31,6 +32,12 @@ func (l *Local) Deregister(ctx context.Context, req *DeregisterRequest) (*Deregi
 }
 
 func (l *Local) Serve(ctx context.Context) error {
+	// unix socket should be unlinked if it exists first
+	// see: https://github.com/golang/go/issues/70985
+	err := os.Remove(l.SocketPath)
+	if err != nil && !os.IsNotExist(err) {
+		return err
+	}
 	listener, err := net.Listen("unix", l.SocketPath)
 	if err != nil {
 		return err
