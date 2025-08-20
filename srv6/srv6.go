@@ -1,6 +1,7 @@
 package srv6
 
 import (
+	"errors"
 	"fmt"
 	"net"
 	"strings"
@@ -89,13 +90,17 @@ func RouteEgressAdd(prefixStr, srcStr string, segmentsStr []string) error {
 		return fmt.Errorf("invalid vpcattachment: %w", err)
 	}
 
+	var errs []error
 	if IsHost(prefix) {
 		if err := neighborproxy.Add(prefix, vpc, vpcAttachment); err != nil {
-			return fmt.Errorf("neighborproxy add failed: %w", err)
+			errs = append(errs, fmt.Errorf("neighborproxy add failed: %w", err))
 		}
 	}
 	if err := routeegress.Add(vpc, vpcAttachment, prefix, segments); err != nil {
-		return fmt.Errorf("routeegress add failed: %w", err)
+		errs = append(errs, fmt.Errorf("routeegress add failed: %w", err))
+	}
+	if len(errs) > 0 {
+		return errors.Join(errs...)
 	}
 	return nil
 }
@@ -127,13 +132,17 @@ func RouteEgressDel(prefixStr, srcStr string, segmentsStr []string) error {
 		return fmt.Errorf("invalid vpcattachment: %w", err)
 	}
 
+	var errs []error
 	if IsHost(prefix) {
 		if err := neighborproxy.Delete(prefix, vpc, vpcAttachment); err != nil {
-			return fmt.Errorf("neighborproxy delete failed: %w", err)
+			errs = append(errs, fmt.Errorf("neighborproxy delete failed: %w", err))
 		}
 	}
 	if err := routeegress.Delete(vpc, vpcAttachment, prefix, segments); err != nil {
-		return fmt.Errorf("routeegress delete failed: %w", err)
+		errs = append(errs, fmt.Errorf("routeegress delete failed: %w", err))
+	}
+	if len(errs) > 0 {
+		return errors.Join(errs...)
 	}
 	return nil
 }
