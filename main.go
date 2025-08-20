@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"golang.org/x/sync/errgroup"
 	"log"
@@ -16,6 +17,8 @@ import (
 	"github.com/spf13/viper"
 
 	"google.golang.org/protobuf/proto"
+
+	"github.com/vishvananda/netlink"
 
 	"github.com/datum-cloud/galactic-agent/api/local"
 	"github.com/datum-cloud/galactic-agent/api/remote"
@@ -136,11 +139,11 @@ func main() {
 						switch kind.Route.Status {
 						case remote.Route_ADD:
 							if err := srv6.RouteEgressAdd(kind.Route.Network, kind.Route.Srv6Endpoint, kind.Route.Srv6Segments); err != nil {
-								return err
+								return IgnoreLinkNotFound(err)
 							}
 						case remote.Route_DELETE:
 							if err := srv6.RouteEgressDel(kind.Route.Network, kind.Route.Srv6Endpoint, kind.Route.Srv6Segments); err != nil {
-								return err
+								return IgnoreLinkNotFound(err)
 							}
 						}
 					}
@@ -192,4 +195,12 @@ func EncodeVPCToSRv6Endpoint(srv6_net, vpc, vpcAttachment string) (string, error
 
 	binary.BigEndian.PutUint64(ip[8:16], (vpcInt<<16)|vpcAttachmentInt)
 	return ip.String(), nil
+}
+
+func IgnoreLinkNotFound(err error) error {
+	var notFoundErr netlink.LinkNotFoundError
+	if errors.As(err, &notFoundErr) {
+		return nil
+	}
+	return err
 }
