@@ -17,7 +17,7 @@ import (
 func RouteIngressAdd(ipStr string) error {
 	ip, err := util.ParseIP(ipStr)
 	if err != nil {
-		return fmt.Errorf("Invalid ip: %w", err)
+		return fmt.Errorf("invalid ip: %w", err)
 	}
 	vpc, vpcAttachment, err := util.ExtractVPCFromSRv6Endpoint(ip)
 	if err != nil {
@@ -25,11 +25,11 @@ func RouteIngressAdd(ipStr string) error {
 	}
 	vpc, err = ToBase62(vpc)
 	if err != nil {
-		return fmt.Errorf("Invalid vpc: %w", err)
+		return fmt.Errorf("invalid vpc: %w", err)
 	}
 	vpcAttachment, err = ToBase62(vpcAttachment)
 	if err != nil {
-		return fmt.Errorf("Invalid vpcattachment: %w", err)
+		return fmt.Errorf("invalid vpcattachment: %w", err)
 	}
 
 	if err := routeingress.Add(netlink.NewIPNet(ip), vpc, vpcAttachment); err != nil {
@@ -41,7 +41,7 @@ func RouteIngressAdd(ipStr string) error {
 func RouteIngressDel(ipStr string) error {
 	ip, err := util.ParseIP(ipStr)
 	if err != nil {
-		return fmt.Errorf("Invalid ip: %w", err)
+		return fmt.Errorf("invalid ip: %w", err)
 	}
 	vpc, vpcAttachment, err := util.ExtractVPCFromSRv6Endpoint(ip)
 	if err != nil {
@@ -49,11 +49,11 @@ func RouteIngressDel(ipStr string) error {
 	}
 	vpc, err = ToBase62(vpc)
 	if err != nil {
-		return fmt.Errorf("Invalid vpc: %w", err)
+		return fmt.Errorf("invalid vpc: %w", err)
 	}
 	vpcAttachment, err = ToBase62(vpcAttachment)
 	if err != nil {
-		return fmt.Errorf("Invalid vpcattachment: %w", err)
+		return fmt.Errorf("invalid vpcattachment: %w", err)
 	}
 
 	if err := routeingress.Delete(netlink.NewIPNet(ip), vpc, vpcAttachment); err != nil {
@@ -65,15 +65,15 @@ func RouteIngressDel(ipStr string) error {
 func RouteEgressAdd(prefixStr, srcStr string, segmentsStr []string) error {
 	prefix, err := netlink.ParseIPNet(prefixStr)
 	if err != nil {
-		return fmt.Errorf("Invalid prefix: %w", err)
+		return fmt.Errorf("invalid prefix: %w", err)
 	}
 	src, err := util.ParseIP(srcStr)
 	if err != nil {
-		return fmt.Errorf("Invalid src: %w", err)
+		return fmt.Errorf("invalid src: %w", err)
 	}
 	segments, err := ParseSegments(segmentsStr)
 	if err != nil {
-		return fmt.Errorf("Invalid segments: %w", err)
+		return fmt.Errorf("invalid segments: %w", err)
 	}
 
 	vpc, vpcAttachment, err := util.ExtractVPCFromSRv6Endpoint(src)
@@ -82,11 +82,11 @@ func RouteEgressAdd(prefixStr, srcStr string, segmentsStr []string) error {
 	}
 	vpc, err = ToBase62(vpc)
 	if err != nil {
-		return fmt.Errorf("Invalid vpc: %w", err)
+		return fmt.Errorf("invalid vpc: %w", err)
 	}
 	vpcAttachment, err = ToBase62(vpcAttachment)
 	if err != nil {
-		return fmt.Errorf("Invalid vpcattachment: %w", err)
+		return fmt.Errorf("invalid vpcattachment: %w", err)
 	}
 
 	if IsHost(prefix) {
@@ -103,15 +103,15 @@ func RouteEgressAdd(prefixStr, srcStr string, segmentsStr []string) error {
 func RouteEgressDel(prefixStr, srcStr string, segmentsStr []string) error {
 	prefix, err := netlink.ParseIPNet(prefixStr)
 	if err != nil {
-		return fmt.Errorf("Invalid prefix: %w", err)
+		return fmt.Errorf("invalid prefix: %w", err)
 	}
 	src, err := util.ParseIP(srcStr)
 	if err != nil {
-		return fmt.Errorf("Invalid src: %w", err)
+		return fmt.Errorf("invalid src: %w", err)
 	}
 	segments, err := ParseSegments(segmentsStr)
 	if err != nil {
-		return fmt.Errorf("Invalid segments: %w", err)
+		return fmt.Errorf("invalid segments: %w", err)
 	}
 
 	vpc, vpcAttachment, err := util.ExtractVPCFromSRv6Endpoint(src)
@@ -120,11 +120,11 @@ func RouteEgressDel(prefixStr, srcStr string, segmentsStr []string) error {
 	}
 	vpc, err = ToBase62(vpc)
 	if err != nil {
-		return fmt.Errorf("Invalid vpc: %w", err)
+		return fmt.Errorf("invalid vpc: %w", err)
 	}
 	vpcAttachment, err = ToBase62(vpcAttachment)
 	if err != nil {
-		return fmt.Errorf("Invalid vpcattachment: %w", err)
+		return fmt.Errorf("invalid vpcattachment: %w", err)
 	}
 
 	if IsHost(prefix) {
