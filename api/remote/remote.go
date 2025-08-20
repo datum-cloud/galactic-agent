@@ -44,7 +44,7 @@ func (r *Remote) Run(ctx context.Context) error {
 			func(_ mqtt.Client, msg mqtt.Message) {
 				payload := msg.Payload()
 				if err := r.ReceiveHandler(payload); err != nil {
-					log.Printf("MQTT ReceiveHandler failed for: %v", payload)
+					log.Printf("MQTT ReceiveHandler failed: %w", err)
 				}
 			},
 		)
