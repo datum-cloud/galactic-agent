@@ -2,7 +2,6 @@ package srv6
 
 import (
 	"fmt"
-	"log"
 	"net"
 	"strings"
 
@@ -18,23 +17,23 @@ import (
 func RouteIngressAdd(ipStr string) error {
 	ip, err := util.ParseIP(ipStr)
 	if err != nil {
-		log.Fatalf("Invalid ip: %v", err)
+		return fmt.Errorf("Invalid ip: %w", err)
 	}
 	vpc, vpcAttachment, err := util.ExtractVPCFromSRv6Endpoint(ip)
 	if err != nil {
-		log.Fatalf("could not extract SRv6 endpoint: %v", err)
+		return fmt.Errorf("could not extract SRv6 endpoint: %w", err)
 	}
 	vpc, err = ToBase62(vpc)
 	if err != nil {
-		log.Fatalf("Invalid vpc: %v", err)
+		return fmt.Errorf("Invalid vpc: %w", err)
 	}
 	vpcAttachment, err = ToBase62(vpcAttachment)
 	if err != nil {
-		log.Fatalf("Invalid vpcattachment: %v", err)
+		return fmt.Errorf("Invalid vpcattachment: %w", err)
 	}
 
 	if err := routeingress.Add(netlink.NewIPNet(ip), vpc, vpcAttachment); err != nil {
-		log.Fatalf("routeingress add failed: %v", err)
+		return fmt.Errorf("routeingress add failed: %w", err)
 	}
 	return nil
 }
@@ -42,23 +41,23 @@ func RouteIngressAdd(ipStr string) error {
 func RouteIngressDel(ipStr string) error {
 	ip, err := util.ParseIP(ipStr)
 	if err != nil {
-		log.Fatalf("Invalid ip: %v", err)
+		return fmt.Errorf("Invalid ip: %w", err)
 	}
 	vpc, vpcAttachment, err := util.ExtractVPCFromSRv6Endpoint(ip)
 	if err != nil {
-		log.Fatalf("could not extract SRv6 endpoint: %v", err)
+		return fmt.Errorf("could not extract SRv6 endpoint: %w", err)
 	}
 	vpc, err = ToBase62(vpc)
 	if err != nil {
-		log.Fatalf("Invalid vpc: %v", err)
+		return fmt.Errorf("Invalid vpc: %w", err)
 	}
 	vpcAttachment, err = ToBase62(vpcAttachment)
 	if err != nil {
-		log.Fatalf("Invalid vpcattachment: %v", err)
+		return fmt.Errorf("Invalid vpcattachment: %w", err)
 	}
 
 	if err := routeingress.Delete(netlink.NewIPNet(ip), vpc, vpcAttachment); err != nil {
-		log.Fatalf("routeingress delete failed: %v", err)
+		return fmt.Errorf("routeingress delete failed: %w", err)
 	}
 	return nil
 }
@@ -66,37 +65,37 @@ func RouteIngressDel(ipStr string) error {
 func RouteEgressAdd(prefixStr, srcStr string, segmentsStr []string) error {
 	prefix, err := netlink.ParseIPNet(prefixStr)
 	if err != nil {
-		log.Fatalf("Invalid prefix: %v", err)
+		return fmt.Errorf("Invalid prefix: %w", err)
 	}
 	src, err := util.ParseIP(srcStr)
 	if err != nil {
-		log.Fatalf("Invalid src: %v", err)
+		return fmt.Errorf("Invalid src: %w", err)
 	}
 	segments, err := ParseSegments(segmentsStr)
 	if err != nil {
-		log.Fatalf("Invalid segments: %v", err)
+		return fmt.Errorf("Invalid segments: %w", err)
 	}
 
 	vpc, vpcAttachment, err := util.ExtractVPCFromSRv6Endpoint(src)
 	if err != nil {
-		log.Fatalf("could not extract SRv6 endpoint: %v", err)
+		return fmt.Errorf("could not extract SRv6 endpoint: %w", err)
 	}
 	vpc, err = ToBase62(vpc)
 	if err != nil {
-		log.Fatalf("Invalid vpc: %v", err)
+		return fmt.Errorf("Invalid vpc: %w", err)
 	}
 	vpcAttachment, err = ToBase62(vpcAttachment)
 	if err != nil {
-		log.Fatalf("Invalid vpcattachment: %v", err)
+		return fmt.Errorf("Invalid vpcattachment: %w", err)
 	}
 
 	if IsHost(prefix) {
 		if err := neighborproxy.Add(prefix, vpc, vpcAttachment); err != nil {
-			log.Fatalf("neighborproxy add failed: %v", err)
+			return fmt.Errorf("neighborproxy add failed: %w", err)
 		}
 	}
 	if err := routeegress.Add(vpc, vpcAttachment, prefix, segments); err != nil {
-		log.Fatalf("routeegress add failed: %v", err)
+		return fmt.Errorf("routeegress add failed: %w", err)
 	}
 	return nil
 }
@@ -104,37 +103,37 @@ func RouteEgressAdd(prefixStr, srcStr string, segmentsStr []string) error {
 func RouteEgressDel(prefixStr, srcStr string, segmentsStr []string) error {
 	prefix, err := netlink.ParseIPNet(prefixStr)
 	if err != nil {
-		log.Fatalf("Invalid prefix: %v", err)
+		return fmt.Errorf("Invalid prefix: %w", err)
 	}
 	src, err := util.ParseIP(srcStr)
 	if err != nil {
-		log.Fatalf("Invalid src: %v", err)
+		return fmt.Errorf("Invalid src: %w", err)
 	}
 	segments, err := ParseSegments(segmentsStr)
 	if err != nil {
-		log.Fatalf("Invalid segments: %v", err)
+		return fmt.Errorf("Invalid segments: %w", err)
 	}
 
 	vpc, vpcAttachment, err := util.ExtractVPCFromSRv6Endpoint(src)
 	if err != nil {
-		log.Fatalf("could not extract SRv6 endpoint: %v", err)
+		return fmt.Errorf("could not extract SRv6 endpoint: %w", err)
 	}
 	vpc, err = ToBase62(vpc)
 	if err != nil {
-		log.Fatalf("Invalid vpc: %v", err)
+		return fmt.Errorf("Invalid vpc: %w", err)
 	}
 	vpcAttachment, err = ToBase62(vpcAttachment)
 	if err != nil {
-		log.Fatalf("Invalid vpcattachment: %v", err)
+		return fmt.Errorf("Invalid vpcattachment: %w", err)
 	}
 
 	if IsHost(prefix) {
 		if err := neighborproxy.Delete(prefix, vpc, vpcAttachment); err != nil {
-			log.Fatalf("neighborproxy delete failed: %v", err)
+			return fmt.Errorf("neighborproxy delete failed: %w", err)
 		}
 	}
 	if err := routeegress.Delete(vpc, vpcAttachment, prefix, segments); err != nil {
-		log.Fatalf("routeegress delete failed: %v", err)
+		return fmt.Errorf("routeegress delete failed: %w", err)
 	}
 	return nil
 }
