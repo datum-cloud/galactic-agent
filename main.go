@@ -28,7 +28,7 @@ func initConfig() {
 	viper.SetDefault("srv6_net", "fc00::/56")
 	viper.SetDefault("socket_path", "/var/run/galactic/agent.sock")
 	viper.SetDefault("mqtt_url", "tcp://mqtt:1883")
-	viper.SetDefault("mqtt_qos", 0)
+	viper.SetDefault("mqtt_qos", 1)
 	viper.SetDefault("mqtt_topic_receive", "galactic/default/receive")
 	viper.SetDefault("mqtt_topic_send", "galactic/default/send")
 	if configFile != "" {
