@@ -35,6 +35,7 @@ func (r *Remote) Run(ctx context.Context) error {
 	if r.Password != "" {
 		opts.SetPassword(r.Password)
 	}
+	opts.SetCleanSession(r.ClientID == "" || r.QoS == 0)
 
 	opts.OnConnect = func(c mqtt.Client) {
 		log.Println("MQTT connected")
