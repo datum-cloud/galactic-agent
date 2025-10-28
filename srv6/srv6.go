@@ -19,7 +19,7 @@ func RouteIngressAdd(ipStr string) error {
 	if err != nil {
 		return fmt.Errorf("invalid ip: %w", err)
 	}
-	vpc, vpcAttachment, err := util.ExtractVPCFromSRv6Endpoint(ip)
+	vpc, vpcAttachment, err := util.DecodeSRv6Endpoint(ip)
 	if err != nil {
 		return fmt.Errorf("could not extract SRv6 endpoint: %w", err)
 	}
@@ -43,7 +43,7 @@ func RouteIngressDel(ipStr string) error {
 	if err != nil {
 		return fmt.Errorf("invalid ip: %w", err)
 	}
-	vpc, vpcAttachment, err := util.ExtractVPCFromSRv6Endpoint(ip)
+	vpc, vpcAttachment, err := util.DecodeSRv6Endpoint(ip)
 	if err != nil {
 		return fmt.Errorf("could not extract SRv6 endpoint: %w", err)
 	}
@@ -76,7 +76,7 @@ func RouteEgressAdd(prefixStr, srcStr string, segmentsStr []string) error {
 		return fmt.Errorf("invalid segments: %w", err)
 	}
 
-	vpc, vpcAttachment, err := util.ExtractVPCFromSRv6Endpoint(src)
+	vpc, vpcAttachment, err := util.DecodeSRv6Endpoint(src)
 	if err != nil {
 		return fmt.Errorf("could not extract SRv6 endpoint: %w", err)
 	}
@@ -118,7 +118,7 @@ func RouteEgressDel(prefixStr, srcStr string, segmentsStr []string) error {
 		return fmt.Errorf("invalid segments: %w", err)
 	}
 
-	vpc, vpcAttachment, err := util.ExtractVPCFromSRv6Endpoint(src)
+	vpc, vpcAttachment, err := util.DecodeSRv6Endpoint(src)
 	if err != nil {
 		return fmt.Errorf("could not extract SRv6 endpoint: %w", err)
 	}
