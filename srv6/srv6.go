@@ -91,7 +91,7 @@ func RouteEgressAdd(prefixStr, srcStr string, segmentsStr []string) error {
 	}
 
 	var errs []error
-	if IsHost(prefix) {
+	if util.IsHost(prefix) {
 		if err := neighborproxy.Add(prefix, vpc, vpcAttachment); err != nil {
 			errs = append(errs, fmt.Errorf("neighborproxy add failed: %w", err))
 		}
@@ -133,7 +133,7 @@ func RouteEgressDel(prefixStr, srcStr string, segmentsStr []string) error {
 	}
 
 	var errs []error
-	if IsHost(prefix) {
+	if util.IsHost(prefix) {
 		if err := neighborproxy.Delete(prefix, vpc, vpcAttachment); err != nil {
 			errs = append(errs, fmt.Errorf("neighborproxy delete failed: %w", err))
 		}
@@ -149,12 +149,6 @@ func RouteEgressDel(prefixStr, srcStr string, segmentsStr []string) error {
 
 func ToBase62(value string) (string, error) {
 	return baseconv.Convert(strings.ToLower(value), baseconv.DigitsHex, baseconv.Digits62)
-}
-
-func IsHost(ipNet *net.IPNet) bool {
-	ones, bits := ipNet.Mask.Size()
-	// host if mask is full length: /32 for IPv4, /128 for IPv6
-	return ones == bits
 }
 
 func ParseSegments(input []string) ([]net.IP, error) {
