@@ -5,7 +5,7 @@ import (
 
 	"github.com/vishvananda/netlink"
 
-	"github.com/datum-cloud/galactic/util"
+	"github.com/datum-cloud/galactic-common/util"
 )
 
 func Add(ipnet *net.IPNet, vpc, vpcAttachment string) error {

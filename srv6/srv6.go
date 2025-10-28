@@ -12,7 +12,7 @@ import (
 	"github.com/datum-cloud/galactic-agent/srv6/neighborproxy"
 	"github.com/datum-cloud/galactic-agent/srv6/routeegress"
 	"github.com/datum-cloud/galactic-agent/srv6/routeingress"
-	"github.com/datum-cloud/galactic/util"
+	"github.com/datum-cloud/galactic-common/util"
 )
 
 func RouteIngressAdd(ipStr string) error {

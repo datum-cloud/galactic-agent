@@ -6,8 +6,8 @@ import (
 	"github.com/vishvananda/netlink"
 	"github.com/vishvananda/netlink/nl"
 
-	"github.com/datum-cloud/galactic/cni/vrf"
-	"github.com/datum-cloud/galactic/util"
+	"github.com/datum-cloud/galactic-common/util"
+	"github.com/datum-cloud/galactic-common/vrf"
 )
 
 func Add(ip *net.IPNet, vpc, vpcAttachment string) error {
