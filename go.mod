@@ -1,11 +1,14 @@
 module github.com/datum-cloud/galactic-agent
 
-go 1.24
+go 1.24.9
 
 require (
+	github.com/datum-cloud/galactic-common v0.0.0-20251028162316-06f70d39f8ed
 	github.com/eclipse/paho.mqtt.golang v1.5.0
+	github.com/kenshaw/baseconv v0.1.1
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/viper v1.20.1
+	github.com/vishvananda/netlink v1.3.2-0.20250622222046-78aca1ace529
 	golang.org/x/sync v0.14.0
 	google.golang.org/grpc v1.74.2
 	google.golang.org/protobuf v1.36.6
@@ -13,15 +16,10 @@ require (
 
 require (
 	github.com/BurntSushi/toml v1.1.0 // indirect
-	github.com/containernetworking/cni v1.3.0 // indirect
-	github.com/coreos/go-iptables v0.8.0 // indirect
-	github.com/datum-cloud/galactic v0.0.3 // indirect
-	github.com/datum-cloud/galactic-common v0.0.0-20251028162316-06f70d39f8ed // indirect
 	github.com/fsnotify/fsnotify v1.8.0 // indirect
 	github.com/go-viper/mapstructure/v2 v2.2.1 // indirect
 	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
-	github.com/kenshaw/baseconv v0.1.1 // indirect
 	github.com/lorenzosaino/go-sysctl v0.3.1 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.3 // indirect
 	github.com/sagikazarmark/locafero v0.7.0 // indirect
@@ -30,7 +28,6 @@ require (
 	github.com/spf13/cast v1.7.1 // indirect
 	github.com/spf13/pflag v1.0.6 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
-	github.com/vishvananda/netlink v1.3.2-0.20250622222046-78aca1ace529 // indirect
 	github.com/vishvananda/netns v0.0.5 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.9.0 // indirect
