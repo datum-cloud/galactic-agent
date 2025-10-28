@@ -16,6 +16,7 @@ require (
 	github.com/containernetworking/cni v1.3.0 // indirect
 	github.com/coreos/go-iptables v0.8.0 // indirect
 	github.com/datum-cloud/galactic v0.0.3 // indirect
+	github.com/datum-cloud/galactic-common v0.0.0-20251028162316-06f70d39f8ed // indirect
 	github.com/fsnotify/fsnotify v1.8.0 // indirect
 	github.com/go-viper/mapstructure/v2 v2.2.1 // indirect
 	github.com/gorilla/websocket v1.5.3 // indirect
