@@ -3,7 +3,6 @@ package srv6
 import (
 	"errors"
 	"fmt"
-	"net"
 	"strings"
 
 	"github.com/kenshaw/baseconv"
@@ -72,7 +71,7 @@ func RouteEgressAdd(prefixStr, srcStr string, segmentsStr []string) error {
 	if err != nil {
 		return fmt.Errorf("invalid src: %w", err)
 	}
-	segments, err := ParseSegments(segmentsStr)
+	segments, err := util.ParseSegments(segmentsStr)
 	if err != nil {
 		return fmt.Errorf("invalid segments: %w", err)
 	}
@@ -114,7 +113,7 @@ func RouteEgressDel(prefixStr, srcStr string, segmentsStr []string) error {
 	if err != nil {
 		return fmt.Errorf("invalid src: %w", err)
 	}
-	segments, err := ParseSegments(segmentsStr)
+	segments, err := util.ParseSegments(segmentsStr)
 	if err != nil {
 		return fmt.Errorf("invalid segments: %w", err)
 	}
@@ -149,22 +148,4 @@ func RouteEgressDel(prefixStr, srcStr string, segmentsStr []string) error {
 
 func ToBase62(value string) (string, error) {
 	return baseconv.Convert(strings.ToLower(value), baseconv.DigitsHex, baseconv.Digits62)
-}
-
-func ParseSegments(input []string) ([]net.IP, error) {
-	var segments []net.IP
-	for _, ipStr := range input {
-		ip, err := util.ParseIP(ipStr)
-		if err != nil {
-			return nil, fmt.Errorf("could not parse ip (%s): %v", ipStr, err)
-		}
-		if ip.To4() != nil {
-			return nil, fmt.Errorf("not an ipv6 address: %s", ipStr)
-		}
-		segments = append([]net.IP{ip}, segments...)
-	}
-	if len(segments) == 0 {
-		return nil, fmt.Errorf("no segments parsed: %v", input)
-	}
-	return segments, nil
 }
