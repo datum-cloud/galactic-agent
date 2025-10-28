@@ -3,9 +3,7 @@ package srv6
 import (
 	"errors"
 	"fmt"
-	"strings"
 
-	"github.com/kenshaw/baseconv"
 	"github.com/vishvananda/netlink"
 
 	"github.com/datum-cloud/galactic-agent/srv6/neighborproxy"
@@ -23,11 +21,11 @@ func RouteIngressAdd(ipStr string) error {
 	if err != nil {
 		return fmt.Errorf("could not extract SRv6 endpoint: %w", err)
 	}
-	vpc, err = ToBase62(vpc)
+	vpc, err = util.HexToBase62(vpc)
 	if err != nil {
 		return fmt.Errorf("invalid vpc: %w", err)
 	}
-	vpcAttachment, err = ToBase62(vpcAttachment)
+	vpcAttachment, err = util.HexToBase62(vpcAttachment)
 	if err != nil {
 		return fmt.Errorf("invalid vpcattachment: %w", err)
 	}
@@ -47,11 +45,11 @@ func RouteIngressDel(ipStr string) error {
 	if err != nil {
 		return fmt.Errorf("could not extract SRv6 endpoint: %w", err)
 	}
-	vpc, err = ToBase62(vpc)
+	vpc, err = util.HexToBase62(vpc)
 	if err != nil {
 		return fmt.Errorf("invalid vpc: %w", err)
 	}
-	vpcAttachment, err = ToBase62(vpcAttachment)
+	vpcAttachment, err = util.HexToBase62(vpcAttachment)
 	if err != nil {
 		return fmt.Errorf("invalid vpcattachment: %w", err)
 	}
@@ -80,11 +78,11 @@ func RouteEgressAdd(prefixStr, srcStr string, segmentsStr []string) error {
 	if err != nil {
 		return fmt.Errorf("could not extract SRv6 endpoint: %w", err)
 	}
-	vpc, err = ToBase62(vpc)
+	vpc, err = util.HexToBase62(vpc)
 	if err != nil {
 		return fmt.Errorf("invalid vpc: %w", err)
 	}
-	vpcAttachment, err = ToBase62(vpcAttachment)
+	vpcAttachment, err = util.HexToBase62(vpcAttachment)
 	if err != nil {
 		return fmt.Errorf("invalid vpcattachment: %w", err)
 	}
@@ -122,11 +120,11 @@ func RouteEgressDel(prefixStr, srcStr string, segmentsStr []string) error {
 	if err != nil {
 		return fmt.Errorf("could not extract SRv6 endpoint: %w", err)
 	}
-	vpc, err = ToBase62(vpc)
+	vpc, err = util.HexToBase62(vpc)
 	if err != nil {
 		return fmt.Errorf("invalid vpc: %w", err)
 	}
-	vpcAttachment, err = ToBase62(vpcAttachment)
+	vpcAttachment, err = util.HexToBase62(vpcAttachment)
 	if err != nil {
 		return fmt.Errorf("invalid vpcattachment: %w", err)
 	}
@@ -144,8 +142,4 @@ func RouteEgressDel(prefixStr, srcStr string, segmentsStr []string) error {
 		return errors.Join(errs...)
 	}
 	return nil
-}
-
-func ToBase62(value string) (string, error) {
-	return baseconv.Convert(strings.ToLower(value), baseconv.DigitsHex, baseconv.Digits62)
 }
