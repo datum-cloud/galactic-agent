@@ -3,9 +3,8 @@ module github.com/datum-cloud/galactic-agent
 go 1.24.9
 
 require (
-	github.com/datum-cloud/galactic-common v0.0.0-20251028162316-06f70d39f8ed
+	github.com/datum-cloud/galactic-common v0.0.0-20251028201425-f06de7d6ad01
 	github.com/eclipse/paho.mqtt.golang v1.5.0
-	github.com/kenshaw/baseconv v0.1.1
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/viper v1.20.1
 	github.com/vishvananda/netlink v1.3.2-0.20250622222046-78aca1ace529
@@ -20,6 +19,7 @@ require (
 	github.com/go-viper/mapstructure/v2 v2.2.1 // indirect
 	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
+	github.com/kenshaw/baseconv v0.1.1 // indirect
 	github.com/lorenzosaino/go-sysctl v0.3.1 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.3 // indirect
 	github.com/sagikazarmark/locafero v0.7.0 // indirect
