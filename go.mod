@@ -3,7 +3,7 @@ module github.com/datum-cloud/galactic-agent
 go 1.24.9
 
 require (
-	github.com/datum-cloud/galactic-common v0.0.0-20251028201425-f06de7d6ad01
+	github.com/datum-cloud/galactic-common v0.0.0-20251029014339-7062fa2334ff
 	github.com/eclipse/paho.mqtt.golang v1.5.0
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/viper v1.20.1
